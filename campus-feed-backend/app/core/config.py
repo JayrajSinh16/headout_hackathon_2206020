@@ -9,7 +9,7 @@ class Settings:
     
     # API Keys
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
     
     # CORS Settings
     ALLOWED_ORIGINS: list = [
@@ -18,8 +18,8 @@ class Settings:
     ]
     
     # AI Settings
-    OPENAI_MODEL: str = "gpt-5-mini"
-    GEMINI_MODEL: str = "gemini-2.0-flash"
+    OPENAI_MODEL: str = "gpt-3.5-turbo"
+    GEMINI_MODEL: str = "gemini-1.5-flash"
     MAX_TOKENS: int = 300
     TEMPERATURE: float = 0.3
     

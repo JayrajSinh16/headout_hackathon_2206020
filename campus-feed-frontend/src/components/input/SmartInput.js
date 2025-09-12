@@ -11,6 +11,8 @@ import Button from '../common/Button';
 const SmartInput = ({ onClassified }) => {
     const [text, setText] = useState('');
     const [aiProvider, setAiProvider] = useState(AI_PROVIDERS.OPENAI);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
     const { loading, error, classify, clearError } = useClassification();
 
     const handleClassify = async () => {
@@ -18,8 +20,16 @@ const SmartInput = ({ onClassified }) => {
 
         try {
             const result = await classify(text.trim(), aiProvider);
-            onClassified(result);
+            // Include image data in the result
+            const resultWithImage = {
+                ...result,
+                image: selectedImage,
+                imagePreview: imagePreview
+            };
+            onClassified(resultWithImage);
             setText('');
+            setSelectedImage(null);
+            setImagePreview(null);
             clearError();
         } catch (err) {
             // Error is handled by the hook
@@ -35,6 +45,24 @@ const SmartInput = ({ onClassified }) => {
     const handleTextChange = (e) => {
         setText(e.target.value);
         if (error) clearError();
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedImage(file);
+            // Create preview URL
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setImagePreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const removeImage = () => {
+        setSelectedImage(null);
+        setImagePreview(null);
     };
 
     return (
@@ -67,6 +95,36 @@ const SmartInput = ({ onClassified }) => {
                     disabled={loading}
                     rows={4}
                 />
+
+                {/* Image Upload Section */}
+                <div className="image-upload-section">
+                    <input
+                        type="file"
+                        id="image-upload"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        style={{ display: 'none' }}
+                        disabled={loading}
+                    />
+                    <label htmlFor="image-upload" className="image-upload-btn">
+                        📷 Add Image
+                    </label>
+                </div>
+
+                {/* Image Preview */}
+                {imagePreview && (
+                    <div className="image-preview">
+                        <img src={imagePreview} alt="Preview" className="preview-image" />
+                        <button
+                            className="remove-image-btn"
+                            onClick={removeImage}
+                            type="button"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                )}
+
                 <Button
                     className="send-button"
                     onClick={handleClassify}

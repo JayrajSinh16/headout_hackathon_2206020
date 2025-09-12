@@ -1,6 +1,7 @@
 import openai
 import google.generativeai as genai
 import json
+import demjson3
 from typing import Dict, Any
 from abc import ABC, abstractmethod
 
@@ -23,23 +24,33 @@ class OpenAIProvider(AIProvider):
     
     async def classify_text(self, text: str) -> Dict[str, Any]:
         """Classify text using OpenAI GPT"""
-        prompt = self._build_prompt(text)
-        
-        response = self.client.chat.completions.create(
-            model=settings.OPENAI_MODEL,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are an AI that classifies campus-related text into categories and extracts structured data. Always respond with valid JSON only."
-                },
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=settings.MAX_TOKENS,
-            temperature=settings.TEMPERATURE
-        )
-        
-        result = response.choices[0].message.content.strip()
-        return self._parse_response(result, text)
+        try:
+            prompt = self._build_prompt(text)
+            print(f"🤖 Sending to OpenAI: {text[:50]}...")
+            
+            response = self.client.chat.completions.create(
+                model=settings.OPENAI_MODEL,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are an AI that classifies campus-related text into categories and extracts structured data. Always respond with valid JSON only."
+                    },
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=settings.MAX_TOKENS,
+                temperature=settings.TEMPERATURE
+            )
+            
+            result = response.choices[0].message.content.strip()
+            print(f"📥 OpenAI raw response: {result[:100]}...")
+            
+            parsed_result = self._parse_response(result, text)
+            print(f"✅ OpenAI parsed successfully: {parsed_result}")
+            return parsed_result
+            
+        except Exception as e:
+            print(f"❌ OpenAI error: {e}")
+            raise e
     
     def _build_prompt(self, text: str) -> str:
         """Build the classification prompt"""
@@ -66,7 +77,7 @@ class OpenAIProvider(AIProvider):
         """
     
     def _parse_response(self, result: str, original_text: str) -> Dict[str, Any]:
-        """Parse AI response and handle errors"""
+        """Parse AI response and handle errors using demjson3"""
         try:
             # Clean the result if it contains markdown code blocks
             if "```json" in result:
@@ -74,8 +85,17 @@ class OpenAIProvider(AIProvider):
             elif "```" in result:
                 result = result.split("```")[1].strip()
             
-            return json.loads(result)
-        except json.JSONDecodeError:
+            # First try standard JSON parsing
+            try:
+                return json.loads(result)
+            except json.JSONDecodeError:
+                # If standard JSON fails, try demjson3 for more forgiving parsing
+                print(f"Standard JSON failed, trying demjson3 for: {result[:100]}...")
+                return demjson3.decode(result)
+                
+        except Exception as e:
+            print(f"Both JSON parsing methods failed: {e}")
+            print(f"Raw response: {result}")
             # Fallback parsing if AI doesn't return pure JSON
             return self._fallback_classification(original_text)
     
@@ -123,12 +143,21 @@ class GeminiProvider(AIProvider):
     
     async def classify_text(self, text: str) -> Dict[str, Any]:
         """Classify text using Google Gemini"""
-        prompt = self._build_prompt(text)
-        
-        response = self.model.generate_content(prompt)
-        result = response.text.strip()
-        
-        return self._parse_response(result, text)
+        try:
+            prompt = self._build_prompt(text)
+            print(f"🔮 Sending to Gemini: {text[:50]}...")
+            
+            response = self.model.generate_content(prompt)
+            result = response.text.strip()
+            print(f"📥 Gemini raw response: {result[:100]}...")
+            
+            parsed_result = self._parse_response(result, text)
+            print(f"✅ Gemini parsed successfully: {parsed_result}")
+            return parsed_result
+            
+        except Exception as e:
+            print(f"❌ Gemini error: {e}")
+            raise e
     
     def _build_prompt(self, text: str) -> str:
         """Build the classification prompt (same as OpenAI for consistency)"""
@@ -155,7 +184,7 @@ class GeminiProvider(AIProvider):
         """
     
     def _parse_response(self, result: str, original_text: str) -> Dict[str, Any]:
-        """Parse AI response and handle errors"""
+        """Parse AI response and handle errors using demjson3"""
         try:
             # Clean the result if it contains markdown code blocks
             if "```json" in result:
@@ -163,8 +192,17 @@ class GeminiProvider(AIProvider):
             elif "```" in result:
                 result = result.split("```")[1].strip()
             
-            return json.loads(result)
-        except json.JSONDecodeError:
+            # First try standard JSON parsing
+            try:
+                return json.loads(result)
+            except json.JSONDecodeError:
+                # If standard JSON fails, try demjson3 for more forgiving parsing
+                print(f"Standard JSON failed for Gemini, trying demjson3 for: {result[:100]}...")
+                return demjson3.decode(result)
+                
+        except Exception as e:
+            print(f"Both JSON parsing methods failed for Gemini: {e}")
+            print(f"Raw Gemini response: {result}")
             # Fallback parsing if AI doesn't return pure JSON
             return self._fallback_classification(original_text)
     
@@ -212,17 +250,30 @@ class AIService:
             "gemini": GeminiProvider()
         }
     
-    async def classify_text(self, text: str, provider: str = "openai") -> ClassifyResponse:
+    async def classify_text(self, text: str, provider: str = "gemini") -> ClassifyResponse:
         """Classify text using specified AI provider"""
         if provider not in self.providers:
-            provider = "openai"  # Default fallback
+            provider = "gemini"  # Default to gemini now
         
         try:
+            print(f"🔍 Attempting classification with {provider}")
             result = await self.providers[provider].classify_text(text)
+            print(f"✅ {provider} classification successful: {result}")
             return ClassifyResponse(**result)
         except Exception as e:
-            print(f"AI API error ({provider}): {e}")
-            # Use fallback classification
+            print(f"❌ AI API error ({provider}): {e}")
+            # If gemini fails, try the other provider
+            if provider == "gemini":
+                try:
+                    print("🔄 Gemini failed, trying OpenAI...")
+                    result = await self.providers["openai"].classify_text(text)
+                    print(f"✅ OpenAI fallback successful: {result}")
+                    return ClassifyResponse(**result)
+                except Exception as e2:
+                    print(f"❌ OpenAI fallback also failed: {e2}")
+            
+            # Use fallback classification only if both fail
+            print("🆘 Using manual fallback classification")
             fallback_result = self.providers["openai"]._fallback_classification(text)
             return ClassifyResponse(**fallback_result)
 

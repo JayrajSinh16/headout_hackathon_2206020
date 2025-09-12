@@ -23,7 +23,9 @@ const SmartInput = ({ onClassified }) => {
     const [text, setText] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [aiProvider, setAiProvider] = useState('openai');
+    const [aiProvider, setAiProvider] = useState('gemini');
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
 
     const handleClassify = async () => {
         if (!text.trim()) return;
@@ -37,8 +39,17 @@ const SmartInput = ({ onClassified }) => {
                 ai_provider: aiProvider
             });
 
-            onClassified(response.data);
+            // Include image data in the result
+            const resultWithImage = {
+                ...response.data,
+                image: selectedImage,
+                imagePreview: imagePreview
+            };
+
+            onClassified(resultWithImage);
             setText('');
+            setSelectedImage(null);
+            setImagePreview(null);
         } catch (err) {
             setError('Failed to classify text. Please try again.');
             console.error('Classification error:', err);
@@ -51,6 +62,24 @@ const SmartInput = ({ onClassified }) => {
         if (e.key === 'Enter' && e.ctrlKey) {
             handleClassify();
         }
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedImage(file);
+            // Create preview URL
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setImagePreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const removeImage = () => {
+        setSelectedImage(null);
+        setImagePreview(null);
     };
 
     return (
@@ -86,6 +115,36 @@ const SmartInput = ({ onClassified }) => {
                     placeholder={`Share what's happening on campus... (powered by ${aiProvider === 'openai' ? 'OpenAI GPT' : 'Google Gemini'})`}
                     disabled={loading}
                 />
+
+                {/* Image Upload Section */}
+                <div className="image-upload-section">
+                    <input
+                        type="file"
+                        id="image-upload"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        style={{ display: 'none' }}
+                        disabled={loading}
+                    />
+                    <label htmlFor="image-upload" className="image-upload-btn">
+                        📷 Add Image
+                    </label>
+                </div>
+
+                {/* Image Preview */}
+                {imagePreview && (
+                    <div className="image-preview">
+                        <img src={imagePreview} alt="Preview" className="preview-image" />
+                        <button
+                            className="remove-image-btn"
+                            onClick={removeImage}
+                            type="button"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                )}
+
                 <button
                     className="send-button"
                     onClick={handleClassify}
@@ -107,10 +166,13 @@ const PreviewCard = ({ classification, onPost, onCancel }) => {
     const handleSubmit = async () => {
         setLoading(true);
         try {
-            await axios.post(`${API_BASE_URL}/api/posts`, {
+            const postData = {
                 ...formData,
-                user_id: getUserId()
-            });
+                user_id: getUserId(),
+                imagePreview: classification.imagePreview || null
+            };
+
+            await axios.post(`${API_BASE_URL}/api/posts`, postData);
             onPost();
         } catch (err) {
             console.error('Post creation error:', err);
@@ -131,7 +193,11 @@ const PreviewCard = ({ classification, onPost, onCancel }) => {
 
                 <div className="preview-content">
                     <div className="preview-image">
-                        Image placeholder
+                        {classification.imagePreview ? (
+                            <img src={classification.imagePreview} alt="Post preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+                        ) : (
+                            'Image placeholder'
+                        )}
                     </div>
 
                     <div className="preview-details">
@@ -300,7 +366,11 @@ const PostCard = ({ post, userId, onRSVPUpdate }) => {
 
             <div className="post-content">
                 <div className="post-image">
-                    Image placeholder
+                    {post.imagePreview ? (
+                        <img src={post.imagePreview} alt="Post image" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }} />
+                    ) : (
+                        'Image placeholder'
+                    )}
                 </div>
 
                 <div className="post-details">
@@ -400,7 +470,7 @@ function App() {
     return (
         <div className="app">
             <div className="header">
-                <h1>feed!</h1>
+                <h1>Write your tho</h1>
             </div>
 
             <SmartInput onClassified={handleClassified} />
