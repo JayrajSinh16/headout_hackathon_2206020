@@ -18,8 +18,8 @@ class Settings:
     ]
     
     # AI Settings
-    OPENAI_MODEL: str = "gpt-3.5-turbo"
-    GEMINI_MODEL: str = "gemini-pro"
+    OPENAI_MODEL: str = "gpt-5-mini"
+    GEMINI_MODEL: str = "gemini-2.0-flash"
     MAX_TOKENS: int = 300
     TEMPERATURE: float = 0.3
     
