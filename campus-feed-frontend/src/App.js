@@ -23,7 +23,7 @@ const SmartInput = ({ onClassified }) => {
     const [text, setText] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [aiProvider, setAiProvider] = useState('gemini');
+    const [aiProvider, setAiProvider] = useState('openrouter');
     const [selectedImage, setSelectedImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
 
@@ -90,6 +90,13 @@ const SmartInput = ({ onClassified }) => {
                 <label>Choose AI Provider:</label>
                 <div className="provider-options">
                     <button
+                        className={`provider-btn ${aiProvider === 'openrouter' ? 'active' : ''}`}
+                        onClick={() => setAiProvider('openrouter')}
+                        disabled={loading}
+                    >
+                        OpenRouter
+                    </button>
+                    <button
                         className={`provider-btn ${aiProvider === 'openai' ? 'active' : ''}`}
                         onClick={() => setAiProvider('openai')}
                         disabled={loading}
@@ -127,7 +134,7 @@ const SmartInput = ({ onClassified }) => {
                         disabled={loading}
                     />
                     <label htmlFor="image-upload" className="image-upload-btn">
-                        📷 Add Image
+                        Add Image
                     </label>
                 </div>
 
@@ -470,7 +477,7 @@ function App() {
     return (
         <div className="app">
             <div className="header">
-                <h1>Write your tho</h1>
+                <h1>Write your Post Here ^.^ </h1>
             </div>
 
             <SmartInput onClassified={handleClassified} />
