@@ -23,7 +23,6 @@ A modern web application that uses AI to automatically classify and organize cam
 - **CSS3**: Custom styling with responsive design
 
 ## 🛠️ Installation & Setup
-
 ### 1. Clone the Repository
 
 ```bash
@@ -110,6 +109,7 @@ The frontend will be available at: `http://localhost:3000`
 ### RSVP to Events
 - Click "Going", "Maybe", or "Not going" on event posts
 - See real-time RSVP counts from other users
+
 
 
 
