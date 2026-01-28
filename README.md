@@ -4,7 +4,7 @@
 A modern web application that uses AI to automatically classify and organize campus posts into events, lost & found items, and announcements. Built for the Headout Hackathon 2025.
 
 ## 🚀 Features
-- **AI-Powered Classification**: Automatically categorizes posts using OpenAI GPT and Google Gemini
+- **AI-Powered Classification**: Automatically categorizes posts using OpenAI GPT and Google Gemini & backfall logic
 - **Smart Event Management**: RSVP functionality for campus events
 - **Lost & Found System**: Efficient tracking of lost and found items
 - **Image Upload**: Add images to posts for better visibility
@@ -32,7 +32,6 @@ A modern web application that uses AI to automatically classify and organize cam
 git clone https://github.com/JayrajSinh16/headout_hackathon_2206020.git
 cd headout_hackathon_2206020
 ```
-
 ### 2. Backend Setup
 
 #### Install Python Dependencies
@@ -112,6 +111,7 @@ The frontend will be available at: `http://localhost:3000`
 ### RSVP to Events
 - Click "Going", "Maybe", or "Not going" on event posts
 - See real-time RSVP counts from other users
+
 
 
 
