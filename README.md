@@ -26,7 +26,6 @@ A modern web application that uses AI to automatically classify and organize cam
 
 ## 🛠️ Installation & Setup
 ### 1. Clone the Repository
-
 ```bash
 git clone https://github.com/JayrajSinh16/headout_hackathon_2206020.git
 cd headout_hackathon_2206020
@@ -111,6 +110,7 @@ The frontend will be available at: `http://localhost:3000`
 ### RSVP to Events
 - Click "Going", "Maybe", or "Not going" on event posts
 - See real-time RSVP counts from other users
+
 
 
 
