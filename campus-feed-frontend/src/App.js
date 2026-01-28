@@ -3,7 +3,6 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:8000';
 
-// Utility function to get or create user ID from cookies
 const getUserId = () => {
     let userId = document.cookie
         .split('; ')
