@@ -1,8 +1,6 @@
 ﻿# Campus Feed - AI-Powered Campus Community Platform
 A modern web application that uses AI to automatically classify and organize campus posts into events, lost & found items, and announcements. Built for the Headout Hackathon 2025.
 
-
-
 ## 🚀 Features
 - **AI-Powered Classification**: Automatically categorizes posts using OpenAI GPT and Google Gemini
 - **Smart Event Management**: RSVP functionality for campus events
@@ -112,6 +110,7 @@ The frontend will be available at: `http://localhost:3000`
 ### RSVP to Events
 - Click "Going", "Maybe", or "Not going" on event posts
 - See real-time RSVP counts from other users
+
 
 
 
