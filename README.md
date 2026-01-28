@@ -17,6 +17,7 @@ A modern web application that uses AI to automatically classify and organize cam
 - **Pydantic**: Data validation and settings management
 - **Uvicorn**: ASGI server
 
+# this commit is for experiment
 ### Frontend
 - **React**: Modern JavaScript library for UI
 - **Axios**: HTTP client for API communication
@@ -107,3 +108,4 @@ The frontend will be available at: `http://localhost:3000`
 ### RSVP to Events
 - Click "Going", "Maybe", or "Not going" on event posts
 - See real-time RSVP counts from other users
+
